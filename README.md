@@ -1,0 +1,1 @@
+# rabbitmq_reuters_indexer_task3
