@@ -175,6 +175,9 @@ def main():
         elif spl_string[0].lower() == 'kill' and spl_string[1].lower() == 'manager' and len(spl_string) == 3:
             send_to(channel, 'to_manager_queue', {'mess': 'kill_m', 'data': int(spl_string[2])}, 'to_client_queue')
             res = wait_answer(channel)
+        elif spl_string[0].lower() == 'print' and spl_string[1] == 'index' and len(spl_string) == 3:
+            send_to(channel, 'to_manager_queue', {'mess': 'print_index', 'data': spl_string[2]}, 'to_client_queue')
+            res = wait_answer(channel)
         else:
             print('Unknown command has been entered, try again')
         if res:

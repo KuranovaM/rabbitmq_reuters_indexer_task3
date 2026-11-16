@@ -38,6 +38,7 @@ class Manager:
         self.indexed_data = {}
         self.is_find_from = False
         self.find_num = -1
+        self.is_indexed = False
 
 
         self.im_lider = False
@@ -469,11 +470,20 @@ class Manager:
             self.send_to(properties.reply_to, 'Ok')
             wr(self.self_num, 'OK end purge')
             self.broadcast({'mess': 'purge_sync', 'data': self.self_num})
+        elif mess == 'print_index':
+            wr(self.self_num, 'PRINT INDEX')
+            if not self.is_indexed:
+                self.send_to(properties.reply_to, 'Data has not been indexed')
+            elif mess_j['data'] not in self.indexed_data:
+                self.send_to(properties.reply_to, 'This word is missing, please try again')
+            else:
+                answer = 'Indexes: [' + ', '.join(map(str, self.indexed_data[mess_j['data']][0])) + ']'
+                self.send_to(properties.reply_to, answer)
         # with open('man_log.txt', 'a') as f:
         #     f.write('client mess: ' + str(mess_j) + '\n')
 
         wr(self.self_num, 'client mess: ', mess_j)
-
+151 39 38 40 34
     def send_k_find(self):
         """
         Поиск по слову
