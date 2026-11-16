@@ -483,7 +483,7 @@ class Manager:
         #     f.write('client mess: ' + str(mess_j) + '\n')
 
         wr(self.self_num, 'client mess: ', mess_j)
-151 39 38 40 34
+
     def send_k_find(self):
         """
         Поиск по слову
