@@ -158,6 +158,14 @@ def main():
             # channel.start_consuming()
             # pass # тут
             res = wait_answer(channel)
+        elif spl_string[0].lower() == 'find' and len(spl_string) == 3:
+            if not spl_string[-1].isdigit():
+                print('Unknown command, Enter a number, try again')
+            else:
+                send_to(channel, 'to_manager_queue', {'mess': 'find_from', 'data': spl_string[1],
+                                                                   'num': int(spl_string[-1])},
+                        'to_client_queue')
+                res = wait_answer(channel)
         elif spl_string[0].lower() == 'info' and len(spl_string) == 1:
             send_to(channel, 'to_manager_queue', {'mess': 'info'}, 'to_client_queue')
             res = wait_answer(channel)

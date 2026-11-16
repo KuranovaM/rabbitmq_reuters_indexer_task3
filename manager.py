@@ -35,6 +35,10 @@ class Manager:
         self.find_word = None
         self.is_work = None
 
+        self.indexed_data = {}
+        self.is_find_from = False
+        self.find_num = -1
+
 
         self.im_lider = False
         self.is_election = False
@@ -436,7 +440,7 @@ class Manager:
             self.is_end = True
             wr(self.self_num, 'EXIT')
 
-        elif mess == 'find':
+        elif mess == 'find' or mess == 'find_from':
             """
             Поиск только если есть слово в словаре менеджера
             """
@@ -445,6 +449,9 @@ class Manager:
                 self.send_to(properties.reply_to, 'This word is missing, please try again')
             else:
                 self.find_word = mess_j['data']
+                self.is_find_from = mess == 'find_from'
+                if self.is_find_from:
+                    self.find_num = mess_j['num']
                 self.check_heartbeats()
                 self.send_k_find()
 
@@ -474,8 +481,13 @@ class Manager:
         :return:
         """
         self.last_count = len(self.live_k)
-        self.find_k = len(self.data[self.find_word])
         self.is_work = 'find'
+        if self.is_find_from:
+            self.find_k = 1
+            self.send_to(self.get_keeper_q(self.find_num), {'mess': 'find', 'data': self.find_word})
+            wr(self.self_num, 'FIND from', self.find_num)
+            return
+        self.find_k = len(self.data[self.find_word])
 
         wr(self.self_num, 'count', self.find_k)
         for i in self.data[self.find_word]:
