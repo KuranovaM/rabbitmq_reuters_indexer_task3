@@ -560,6 +560,8 @@ class Manager:
                          + f'\n Count: {len(self.find_res)}')
             self.find_res.clear()
             self.find_k = -1
+            self.find_num = -1
+            self.is_find_from = False
             wr(self.self_num, "send finding titles to client")
             self.is_work = None
         if self.load_k == self.k:
