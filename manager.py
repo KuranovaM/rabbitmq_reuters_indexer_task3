@@ -59,11 +59,18 @@ class Manager:
 
         self.is_end = False
 
-    def start_proc(self, num, tp, param = None):
+        self.build_count = 0
+        self.mapper_count = -1
+        self.comb_count = -1
+        self.num_map = 2
+
+    def start_proc(self, num, tp, param=None):
+        if param is None:
+            param = []
         try:
             wr(self.self_num, f'open {tp}.py')
             process = subprocess.Popen(
-                [sys.executable, f"{tp}.py", str(num), str(param)],
+                [sys.executable, f"{tp}.py", str(num)] + list(map(str, param) if param else []),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True
@@ -336,6 +343,10 @@ class Manager:
                 self.is_work = None
                 self.find_res.clear()
                 self.send_k_find()
+            elif self.is_work == 'save_data':
+                self.is_work = None
+                self.build_count = 0
+                self.send_build()
 
     def path_exist(self):
         folder_path = f'manager'
@@ -373,11 +384,11 @@ class Manager:
                 self.channel.queue_purge(queue=f'to_keeper{i}_queue')
                 self.channel.queue_declare(queue=f'to_r{i}_from_man')
                 wr(self.self_num, f'start etl num {i}')
-                self.start_proc(i, 'etl', self.k)
+                self.start_proc(i, 'etl', [self.k])
                 wr(self.self_num, f'start keeper num {i}')
-                self.start_proc(i, 'keeper', self.k)
+                self.start_proc(i, 'keeper', [self.k])
                 wr(self.self_num, f'start rep num {i}')
-                self.start_proc(i, 'rep', self.k)
+                self.start_proc(i, 'rep', [self.k])
                 self.live_k.add(i)
                 self.last_seen[i] = time.time()
             # self.send_to(properties.reply_to, 'System ready')
@@ -488,10 +499,21 @@ class Manager:
             else:
                 answer = 'Indexes: [' + ', '.join(map(str, self.indexed_data[mess_j['data']][0])) + ']'
                 self.send_to(properties.reply_to, answer)
+
+        elif mess == 'build_index':
+            wr(self.self_num, 'Start build')
+            self.send_build()
         # with open('man_log.txt', 'a') as f:
         #     f.write('client mess: ' + str(mess_j) + '\n')
 
         wr(self.self_num, 'client mess: ', mess_j)
+
+    def send_build(self):
+        self.is_work = 'save_data'
+        self.build_count = 0
+        for i in range(self.k):
+            self.send_to(self.get_keeper_q(i), {'mess': 'save_info'})
+
 
     def send_k_find(self):
         """
@@ -523,6 +545,17 @@ class Manager:
         self.is_work = 'info'
         for i in range(self.k):
             self.send_to(self.get_keeper_q(i), {'mess': 'get_info'})
+
+    def start_mapper(self):
+        wr(self.self_num, 'start_mapper!')
+        self.mapper_count = self.num_map * self.k
+        for j in range(self.k):
+            for i in range(self.num_map):
+                self.start_proc(i, 'mapper', [j, self.num_map])
+        self.is_work = 'map'
+
+    def start_comb(self):
+        pass
 
     def find(self, ch, method, properties, body):
         """
@@ -556,6 +589,19 @@ class Manager:
             # wr(self.self_num, )
         elif mess == 'end':
             self.find_k -= 1
+        elif mess == 'mapp_end':
+            self.mapper_count -= 1
+            if self.mapper_count == 0:
+                self.mapper_count = -1
+                wr('END_ALL mappers')
+                self.start_comb()
+
+        elif mess == 'keeper_save':
+            self.build_count += 1
+            wr(self.self_num, 'KEEPER save data', self.build_count)
+            if self.build_count == self.k:
+                self.build_count = 0
+                self.start_mapper()
         elif mess == 'info':
             wr(self.self_num, message['data'])
             data = message['data']

@@ -178,6 +178,11 @@ def main():
         elif spl_string[0].lower() == 'print' and spl_string[1] == 'index' and len(spl_string) == 3:
             send_to(channel, 'to_manager_queue', {'mess': 'print_index', 'data': spl_string[2]}, 'to_client_queue')
             res = wait_answer(channel)
+        elif spl_string[0] == 'build' and spl_string[1] == 'index' and 1 < len(spl_string) < 4:
+            if spl_string[3].isdigit():
+                send_to(channel, 'to_manager_queue', {'mess': 'build_index', 'data': int(spl_string[2]) if 1 < int(spl_string[2]) < 4 else 2}, 'to_client_queue')
+            else:
+                print('Wrong command has been entered, try again')
         else:
             print('Unknown command has been entered, try again')
         if res:

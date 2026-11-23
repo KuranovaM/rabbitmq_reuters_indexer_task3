@@ -57,7 +57,6 @@ class Replica:
         wr(self.num, 'I SAVE DATA TO ', f'data_keeper{self.num}.json')
         with open(f'./storage_{self.num}/data_keeper{self.num}.json', 'w') as f:
             f.write(json.dumps(self.data))
-        self.send_to('to_manager_from_k', {'mess': 'keeper_save'})
 
     def find(self, word):
         count = 0
@@ -134,6 +133,10 @@ class Replica:
             self.is_main = True
             wr(self.num, 'from etl', message)
             self.load(ch, method, properties, body)
+
+        elif mess == 'save_info':
+            self.save_data()
+            self.send_to('to_manager_from_k', {'mess': 'keeper_save'})
         else:
             wr(self.num,'Хз что тут', message)
 

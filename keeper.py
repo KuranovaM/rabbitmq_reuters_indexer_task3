@@ -86,7 +86,6 @@ class Keeper:
         wr(self.num, 'I SAVE DATA TO ', f'data_keeper{self.num}.json')
         with open(f'./storage_{self.num}/data_keeper{self.num}.json', 'w') as f:
             f.write(json.dumps(self.data))
-        self.send_to('to_manager_from_k', {'mess': 'keeper_save'})
 
     def load(self, ch, method, properties, body):
         # wr(self.num,'LOAD!')
@@ -148,6 +147,7 @@ class Keeper:
                                               'data': {'count': len(self.data), 'num': f"Keeper {self.num}"}})
         elif mess == 'save_info':
             self.save_data()
+            self.send_to('to_manager_from_k', {'mess': 'keeper_save'})
         else:
             wr(self.num,'Хз что тут', message)
 
