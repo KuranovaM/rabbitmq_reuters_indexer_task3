@@ -1,5 +1,6 @@
 import glob
 import json
+import os
 import subprocess
 import sys
 import time
@@ -336,6 +337,14 @@ class Manager:
                 self.find_res.clear()
                 self.send_k_find()
 
+    def path_exist(self):
+        folder_path = f'manager'
+
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            wr(self.num, 'Папка создана')
+        else:
+            wr(self.num, 'Папка уже существует')
 
 
     def processing(self, ch, method, properties, body):

@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 
 import pika
@@ -56,6 +57,15 @@ class Keeper:
                           properties=properties,
                           body=json.dumps(body).encode())
 
+    def path_exist(self):
+        folder_path = f'storage_{self.num}'
+
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            wr(self.num, 'Папка создана')
+        else:
+            wr(self.num, 'Папка уже существует')
+
     def find(self, word):
         count = 0
         word = word.lower()
@@ -69,6 +79,14 @@ class Keeper:
                 count += 1
         wr(self.num,'find', count, 'titles, send end mess')
         self.send_to('to_manager_from_k', {'mess': "end"})
+
+
+    def save_data(self):
+        self.path_exist()
+        wr(self.num, 'I SAVE DATA TO ', f'data_keeper{self.num}.json')
+        with open(f'./storage_{self.num}/data_keeper{self.num}.json', 'w') as f:
+            f.write(json.dumps(self.data))
+        self.send_to('to_manager_from_k', {'mess': 'keeper_save'})
 
     def load(self, ch, method, properties, body):
         # wr(self.num,'LOAD!')
@@ -128,6 +146,8 @@ class Keeper:
             wr(self.num, {'count': len(self.data), 'num': f"Keeper {self.num}"})
             self.send_to('to_manager_from_k', {'mess': 'info',
                                               'data': {'count': len(self.data), 'num': f"Keeper {self.num}"}})
+        elif mess == 'save_info':
+            self.save_data()
         else:
             wr(self.num,'Хз что тут', message)
 
