@@ -3,9 +3,6 @@ import sys
 
 import pika
 
-from rep import wr
-
-
 class Mapper:
     def __init__(self, num, keeper_num, all_num):
         self.self_num = num
@@ -29,21 +26,26 @@ class Mapper:
         # self.channel.queue_declare(queue=f'to_mapper{self.self_num}_from_m')
         # self.channel.basic_consume(queue=f'to_keeper{self.num}_queue', on_message_callback=self.resp, auto_ack=True)
 
-        try:
-            self.channel.start_consuming()
-        except Exception as e:
-            self.wr("Завершение... ", e)
-        finally:
-            self.connection.close()
-        wr(self.self_num, 'EXIT')
+        # try:
+        #     self.channel.start_consuming()
+        # except Exception as e:
+        #     self.wr("Завершение... ", e)
+        # finally:
+        #     self.connection.close()
+        # self.wr('EXIT')
+
+    def end(self):
+        self.connection.close()
+        self.wr('EXIT')
+
 
     def write_data(self):
-        with open(f'/storage_{self.keeper_num}/map_data{self.self_num}.txt', 'w') as f:
+        with open(f'./storage_{self.keeper_num}/map_data{self.self_num}.json', 'w') as f:
             f.write(json.dumps(self.data))
         self.data = {}
 
     def processing(self):
-        f = open(f'./storage/data_keeper{self.keeper_num}.json', 'r')
+        f = open(f'./storage_{self.keeper_num}/data_keeper{self.keeper_num}.json', 'r')
         local_data = json.load(f)
         f.close()
         for i in range(self.self_num, len(local_data), self.count):
@@ -53,8 +55,8 @@ class Mapper:
                 self.data[j] = (file_num, self.keeper_num)
         self.write_data()
         self.send_to('to_manager_from_k', {'mess': 'map_end'})
-        self.channel.stop_consuming()
-        wr(self.self_num, 'END')
+
+        self.wr('END')
 
     def send_to(self, queue, body, reply_to=None):
         properties = None
@@ -71,3 +73,8 @@ class Mapper:
 
 if __name__ == '__main__':
     m = Mapper(sys.argv[1], sys.argv[2], sys.argv[3])
+    try:
+        m.processing()
+    except Exception as e:
+        m.wr('ERROR', e)
+    m.end()

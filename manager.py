@@ -502,6 +502,7 @@ class Manager:
 
         elif mess == 'build_index':
             wr(self.self_num, 'Start build')
+            self.num_map = mess_j['data']
             self.send_build()
         # with open('man_log.txt', 'a') as f:
         #     f.write('client mess: ' + str(mess_j) + '\n')
@@ -555,6 +556,10 @@ class Manager:
         self.is_work = 'map'
 
     def start_comb(self):
+        self.is_work = 'comb'
+        wr(self.self_num, 'start comb')
+        for i in range(self.k):
+            self.start_proc(i, 'comp', [i, self.num_map])
         pass
 
     def find(self, ch, method, properties, body):
@@ -589,7 +594,7 @@ class Manager:
             # wr(self.self_num, )
         elif mess == 'end':
             self.find_k -= 1
-        elif mess == 'mapp_end':
+        elif mess == 'map_end':
             self.mapper_count -= 1
             if self.mapper_count == 0:
                 self.mapper_count = -1
