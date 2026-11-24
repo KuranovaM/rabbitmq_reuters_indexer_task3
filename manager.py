@@ -207,6 +207,9 @@ class Manager:
             self.is_indexed = False
             self.indexed_data.clear()
 
+        elif mess == 'reduce':
+            self.reduce()
+
         elif mess == 'exit':
             self.is_running = False
             self.is_end = True
@@ -586,12 +589,14 @@ class Manager:
                 for j in local_data:
                     if j not in self.indexed_data:
                         self.indexed_data[j] = [[], []]
-                    # если без повторений, то след строку добавить
-                    # if local_data[j][0] not in self.indexed_data[j][0]:
                     self.indexed_data[j][0].extend(local_data[j][0])
                     self.indexed_data[j][1].extend(local_data[j][1])
+                    # если без повторений, то след строку добавить
+                    self.indexed_data[j][0] = list(set(self.indexed_data[j][0]))
+                    self.indexed_data[j][1] = list(set(self.indexed_data[j][1]))
                     if j == 'cat':
                         wr(self.self_num, 'CAT!!!', self.indexed_data[j], local_data[j], i)
+
         if self.im_lider:
             self.send_to('to_client_queue', 'End of indexing')
 
