@@ -56,8 +56,10 @@ class Mapper:
             for j in words:
                 if j not in self.data:
                     self.data[j] = []
-                if (file_num, self.keeper_num) not in self.data[j]:
-                    self.data[j] = (file_num, self.keeper_num)
+                # if (file_num, self.keeper_num) not in self.data[j]: # если без повторений то добавить это, добавлять не всегда
+                self.data[j].append((file_num, self.keeper_num))
+                if j == 'cat':
+                    self.wr('CAT', self.data[j])
             self.wr('tyt')
         self.write_data()
         self.send_to('to_manager_from_k', {'mess': 'map_end'})

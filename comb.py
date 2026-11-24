@@ -31,12 +31,15 @@ def work(self_num, keeper_num, mapper_count):
                     # сколько раз надо добавлять номер хранителя? если один, то
                     # data[j] = [[], [keeper_num]]
                 if j == 'cat':
-                    wr(self_num, 'cat!!!', loc_data[j])
-                if (j, loc_data[j][0], keeper_num) not in st:
-                    data[j][0].append(loc_data[j][0])
-                    # если без повторений то следующее закоментировать!
-                    data[j][1].append(loc_data[j][1])
-                    st.add((j, loc_data[j][0], loc_data[j][1]))
+                    wr(self_num, 'cat!!!', loc_data[j], i)
+                for k in loc_data[j]:
+                    if (j, k[0], keeper_num) not in st:
+                        data[j][0].append(k[0])
+                        # если без повторений то следующее закоментировать!
+                        data[j][1].append(k[1])
+                        st.add((j, k[0], k[1]))
+                if j == 'cat':
+                    wr(self_num, 'CAT!!!', data[j])
         wr(self_num, 'end file', f'./storage_{keeper_num}/map_data{i}.json')
     with open(f'./manager/comb_{self_num}.json', 'w') as f:
         f.write(json.dumps(data))

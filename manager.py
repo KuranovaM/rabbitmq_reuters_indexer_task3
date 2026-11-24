@@ -199,9 +199,13 @@ class Manager:
             data = msg['data']
             for w in data['words']:
                 self.data.setdefault(w.lower(), set()).add(data['num'])
+            self.is_load = True
 
         elif mess == 'purge_sync':
             self.data.clear()
+            self.is_load = False
+            self.is_indexed = False
+            self.indexed_data.clear()
 
         elif mess == 'exit':
             self.is_running = False
@@ -488,9 +492,12 @@ class Manager:
                 self.send_to(self.get_keeper_q(i), {'mess': 'purge'})
             self.data.clear()
             wr(self.self_num, 'send end purge')
-            self.send_to(properties.reply_to, 'Ok')
             wr(self.self_num, 'OK end purge')
+            self.is_load = False
+            self.is_indexed = False
+            self.indexed_data.clear()
             self.broadcast({'mess': 'purge_sync', 'data': self.self_num})
+            self.send_to(properties.reply_to, 'Ok')
         elif mess == 'print_index':
             wr(self.self_num, 'PRINT INDEX')
             if not self.is_indexed:
@@ -499,8 +506,7 @@ class Manager:
                 self.send_to(properties.reply_to, 'This word is missing, please try again')
             else:
                 wr(self.self_num, self.indexed_data[mess_j['data']])
-                answer = f'Indexes of {mess_j['data']}: [' + ', '.join(self.indexed_data[mess_j['data']][0]) \
-                         + '], [' + ', '.join(map(str, self.indexed_data[mess_j['data'][1]])) + ']'
+                answer = f'Indexes of {mess_j['data']}: {repr(self.indexed_data[mess_j["data"]])}'
                 self.send_to(properties.reply_to, answer)
 
         elif mess == 'build_index':
@@ -573,7 +579,7 @@ class Manager:
     def reduce(self):
         self.is_indexed = True
         if self.im_lider:
-            self.broadcast({'mess': 'reduce'})
+            self.broadcast({'mess': 'reduce', 'data': ''})
         for i in range(self.k):
             with open(f'./manager/comb_{i}.json', 'r') as f:
                 local_data = json.load(f)
@@ -584,6 +590,8 @@ class Manager:
                     # if local_data[j][0] not in self.indexed_data[j][0]:
                     self.indexed_data[j][0].extend(local_data[j][0])
                     self.indexed_data[j][1].extend(local_data[j][1])
+                    if j == 'cat':
+                        wr(self.self_num, 'CAT!!!', self.indexed_data[j], local_data[j], i)
         if self.im_lider:
             self.send_to('to_client_queue', 'End of indexing')
 
