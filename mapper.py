@@ -48,11 +48,17 @@ class Mapper:
         f = open(f'./storage_{self.keeper_num}/data_keeper{self.keeper_num}.json', 'r')
         local_data = json.load(f)
         f.close()
+        self.wr('tyt2')
         for i in range(self.self_num, len(local_data), self.count):
             string, file_num = local_data[i]
+            self.wr('tyt1')
             words = string.lower().split() # повторения смотреть или нет?.. наверное нет...
             for j in words:
-                self.data[j] = (file_num, self.keeper_num)
+                if j not in self.data:
+                    self.data[j] = []
+                if (file_num, self.keeper_num) not in self.data[j]:
+                    self.data[j] = (file_num, self.keeper_num)
+            self.wr('tyt')
         self.write_data()
         self.send_to('to_manager_from_k', {'mess': 'map_end'})
 
@@ -72,7 +78,8 @@ class Mapper:
         # mess = message['mess']
 
 if __name__ == '__main__':
-    m = Mapper(sys.argv[1], sys.argv[2], sys.argv[3])
+    m = Mapper(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
+    m.start()
     try:
         m.processing()
     except Exception as e:

@@ -137,54 +137,58 @@ def main():
         if string == '':
             # print('tyt')
             continue
-        spl_string = string.split()
-        if spl_string[0].lower() == 'start':
-            print('System has been started yet')
-        elif spl_string[0].lower() == 'purge' and len(spl_string) == 1:
-            send_to(channel, 'to_manager_queue', {'mess': 'purge'}, reply_to='to_client_queue')
-            # channel.start_consuming()
-            res = wait_answer(channel)
-            # pass # тут что-то про очистку узлов
-        elif spl_string[0].lower() == 'load' and len(spl_string) == 3 \
-                and spl_string[-1] in ['d', 'h']: # and all([not i.isdigit() for i in spl_string]) \
-            send_to(channel, 'to_manager_queue', {'mess': 'load',
-                                                  'data': {'path': spl_string[1],
-                                                           'mode': spl_string[-1]}}, 'to_client_queue')
-            # channel.start_consuming()
-            res = wait_answer(channel, result_timeout=100)
-        elif spl_string[0].lower() == 'find' and len(spl_string) == 2:
-            send_to(channel, 'to_manager_queue', {'mess': 'find', 'data': spl_string[1]},
-                    'to_client_queue')
-            # channel.start_consuming()
-            # pass # тут
-            res = wait_answer(channel)
-        elif spl_string[0].lower() == 'find' and len(spl_string) == 3:
-            if not spl_string[-1].isdigit():
-                print('Unknown command, Enter a number, try again')
-            else:
-                send_to(channel, 'to_manager_queue', {'mess': 'find_from', 'data': spl_string[1],
-                                                                   'num': int(spl_string[-1])},
-                        'to_client_queue')
+        try:
+            spl_string = string.split()
+            if spl_string[0].lower() == 'start':
+                print('System has been started yet')
+            elif spl_string[0].lower() == 'purge' and len(spl_string) == 1:
+                send_to(channel, 'to_manager_queue', {'mess': 'purge'}, reply_to='to_client_queue')
+                # channel.start_consuming()
                 res = wait_answer(channel)
-        elif spl_string[0].lower() == 'info' and len(spl_string) == 1:
-            send_to(channel, 'to_manager_queue', {'mess': 'info'}, 'to_client_queue')
-            res = wait_answer(channel)
-        elif spl_string[0].lower() == 'kill' and len(spl_string) == 2 and spl_string[1].isdigit():
-            send_to(channel, 'to_manager_queue', {'mess': 'kill', 'data': int(spl_string[1])}, 'to_client_queue')
-            res = wait_answer(channel)
-        elif spl_string[0].lower() == 'kill' and spl_string[1].lower() == 'manager' and len(spl_string) == 3:
-            send_to(channel, 'to_manager_queue', {'mess': 'kill_m', 'data': int(spl_string[2])}, 'to_client_queue')
-            res = wait_answer(channel)
-        elif spl_string[0].lower() == 'print' and spl_string[1] == 'index' and len(spl_string) == 3:
-            send_to(channel, 'to_manager_queue', {'mess': 'print_index', 'data': spl_string[2]}, 'to_client_queue')
-            res = wait_answer(channel)
-        elif spl_string[0] == 'build' and spl_string[1] == 'index' and 1 < len(spl_string) < 4:
-            if spl_string[3].isdigit():
-                send_to(channel, 'to_manager_queue', {'mess': 'build_index', 'data': int(spl_string[2]) if 1 < int(spl_string[2]) < 4 else 2}, 'to_client_queue')
+                # pass # тут что-то про очистку узлов
+            elif spl_string[0].lower() == 'load' and len(spl_string) == 3 \
+                    and spl_string[-1] in ['d', 'h']: # and all([not i.isdigit() for i in spl_string]) \
+                send_to(channel, 'to_manager_queue', {'mess': 'load',
+                                                      'data': {'path': spl_string[1],
+                                                               'mode': spl_string[-1]}}, 'to_client_queue')
+                # channel.start_consuming()
+                res = wait_answer(channel, result_timeout=100)
+            elif spl_string[0].lower() == 'find' and len(spl_string) == 2:
+                send_to(channel, 'to_manager_queue', {'mess': 'find', 'data': spl_string[1]},
+                        'to_client_queue')
+                # channel.start_consuming()
+                # pass # тут
+                res = wait_answer(channel)
+            elif spl_string[0].lower() == 'find' and len(spl_string) == 3:
+                if not spl_string[-1].isdigit():
+                    print('Unknown command, Enter a number, try again')
+                else:
+                    send_to(channel, 'to_manager_queue', {'mess': 'find_from', 'data': spl_string[1],
+                                                                       'num': int(spl_string[-1])},
+                            'to_client_queue')
+                    res = wait_answer(channel)
+            elif spl_string[0].lower() == 'info' and len(spl_string) == 1:
+                send_to(channel, 'to_manager_queue', {'mess': 'info'}, 'to_client_queue')
+                res = wait_answer(channel)
+            elif spl_string[0].lower() == 'kill' and len(spl_string) == 2 and spl_string[1].isdigit():
+                send_to(channel, 'to_manager_queue', {'mess': 'kill', 'data': int(spl_string[1])}, 'to_client_queue')
+                res = wait_answer(channel)
+            elif spl_string[0].lower() == 'kill' and spl_string[1].lower() == 'manager' and len(spl_string) == 3:
+                send_to(channel, 'to_manager_queue', {'mess': 'kill_m', 'data': int(spl_string[2])}, 'to_client_queue')
+                res = wait_answer(channel)
+            elif spl_string[0].lower() == 'print' and spl_string[1] == 'index' and len(spl_string) == 3:
+                send_to(channel, 'to_manager_queue', {'mess': 'print_index', 'data': spl_string[2]}, 'to_client_queue')
+                res = wait_answer(channel)
+            elif spl_string[0] == 'build' and spl_string[1] == 'index' and 1 < len(spl_string) < 4:
+                if len(spl_string) > 2 and spl_string[2].isdigit():
+                    send_to(channel, 'to_manager_queue', {'mess': 'build_index', 'data': int(spl_string[2]) if 1 < int(spl_string[2]) < 4 else 2}, 'to_client_queue')
+                    res = wait_answer(channel)
+                else:
+                    print('Wrong command has been entered, try again')
             else:
-                print('Wrong command has been entered, try again')
-        else:
-            print('Unknown command has been entered, try again')
+                print('Unknown command has been entered, try again')
+        except Exception as e:
+            print('Была ошибка ', e)
         if res:
             """ если ошибка или нет менеджеров то надо все выключить"""
             print('break')

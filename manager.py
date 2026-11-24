@@ -63,6 +63,7 @@ class Manager:
         self.mapper_count = -1
         self.comb_count = -1
         self.num_map = 2
+        self.is_load = False
 
     def start_proc(self, num, tp, param=None):
         if param is None:
@@ -353,9 +354,9 @@ class Manager:
 
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-            wr(self.num, 'Папка создана')
+            wr(self.self_num, 'Папка создана')
         else:
-            wr(self.num, 'Папка уже существует')
+            wr(self.self_num, 'Папка уже существует')
 
 
     def processing(self, ch, method, properties, body):
@@ -497,13 +498,18 @@ class Manager:
             elif mess_j['data'] not in self.indexed_data:
                 self.send_to(properties.reply_to, 'This word is missing, please try again')
             else:
-                answer = 'Indexes: [' + ', '.join(map(str, self.indexed_data[mess_j['data']][0])) + ']'
+                wr(self.self_num, self.indexed_data[mess_j['data']])
+                answer = f'Indexes of {mess_j['data']}: [' + ', '.join(self.indexed_data[mess_j['data']][0]) \
+                         + '], [' + ', '.join(map(str, self.indexed_data[mess_j['data'][1]])) + ']'
                 self.send_to(properties.reply_to, answer)
 
         elif mess == 'build_index':
-            wr(self.self_num, 'Start build')
-            self.num_map = mess_j['data']
-            self.send_build()
+            if not self.is_load:
+                self.send_to(properties.reply_to, 'there is no uploaded data to indexing')
+            else:
+                wr(self.self_num, 'Start build')
+                self.num_map = mess_j['data']
+                self.send_build()
         # with open('man_log.txt', 'a') as f:
         #     f.write('client mess: ' + str(mess_j) + '\n')
 
@@ -556,11 +562,32 @@ class Manager:
         self.is_work = 'map'
 
     def start_comb(self):
+        self.path_exist()
         self.is_work = 'comb'
         wr(self.self_num, 'start comb')
+        self.comb_count = 0
         for i in range(self.k):
-            self.start_proc(i, 'comp', [i, self.num_map])
-        pass
+            self.start_proc(i, 'comb', [i, self.num_map])
+
+
+    def reduce(self):
+        self.is_indexed = True
+        if self.im_lider:
+            self.broadcast({'mess': 'reduce'})
+        for i in range(self.k):
+            with open(f'./manager/comb_{i}.json', 'r') as f:
+                local_data = json.load(f)
+                for j in local_data:
+                    if j not in self.indexed_data:
+                        self.indexed_data[j] = [[], []]
+                    # если без повторений, то след строку добавить
+                    # if local_data[j][0] not in self.indexed_data[j][0]:
+                    self.indexed_data[j][0].extend(local_data[j][0])
+                    self.indexed_data[j][1].extend(local_data[j][1])
+        if self.im_lider:
+            self.send_to('to_client_queue', 'End of indexing')
+
+
 
     def find(self, ch, method, properties, body):
         """
@@ -598,7 +625,7 @@ class Manager:
             self.mapper_count -= 1
             if self.mapper_count == 0:
                 self.mapper_count = -1
-                wr('END_ALL mappers')
+                wr(self.self_num, 'END_ALL mappers')
                 self.start_comb()
 
         elif mess == 'keeper_save':
@@ -623,6 +650,12 @@ class Manager:
             if num not in self.live_k:
                 wr(self.self_num, f'keeper {num} alive again')
                 self.live_k.add(num)
+        elif mess == 'comd_end':
+            self.comb_count += 1
+            if self.comb_count == self.k:
+                self.comb_count = 0
+                self.is_work = None
+                self.reduce()
 
         if self.find_k == 0:
             self.find_res.sort()
@@ -644,6 +677,8 @@ class Manager:
             wr(self.self_num, 'ok all keepers asked')
             self.keeper_count = 0
             self.is_work = None
+            self.is_load = True
+
 
 
 

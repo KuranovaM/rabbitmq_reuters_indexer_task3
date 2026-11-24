@@ -28,8 +28,13 @@ def work(self_num, keeper_num, mapper_count):
             for j in loc_data:
                 if j not in data:
                     data[j] = [[], []]
-                if (j, loc_data[j][0], loc_data[j][1]) not in st:
+                    # сколько раз надо добавлять номер хранителя? если один, то
+                    # data[j] = [[], [keeper_num]]
+                if j == 'cat':
+                    wr(self_num, 'cat!!!', loc_data[j])
+                if (j, loc_data[j][0], keeper_num) not in st:
                     data[j][0].append(loc_data[j][0])
+                    # если без повторений то следующее закоментировать!
                     data[j][1].append(loc_data[j][1])
                     st.add((j, loc_data[j][0], loc_data[j][1]))
         wr(self_num, 'end file', f'./storage_{keeper_num}/map_data{i}.json')
@@ -43,6 +48,6 @@ def work(self_num, keeper_num, mapper_count):
 
 if __name__ == '__main__':
     try:
-        work(sys.argv[1], sys.argv[2], sys.argv[3])
+        work(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
     except Exception as e:
-        wr(sys.argv[1], 'ERROR', e)
+        wr(int(sys.argv[1]), 'ERROR', e)
